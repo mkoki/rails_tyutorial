@@ -1,0 +1,5 @@
+current directory: /var/www/rails_tyutorial/vendor/bundle/ruby/2.6.0/gems/childprocess-2.0.0/ext
+/home/ec2-user/.rbenv/versions/2.6.4/bin/ruby mkrf_conf.rb
+
+current directory: /var/www/rails_tyutorial/vendor/bundle/ruby/2.6.0/gems/childprocess-2.0.0/ext
+/home/ec2-user/.rbenv/versions/2.6.4/bin/ruby -rrubygems /var/www/rails_tyutorial/vendor/bundle/ruby/2.6.0/gems/rake-12.3.3/exe/rake RUBYARCHDIR\=/var/www/rails_tyutorial/vendor/bundle/ruby/2.6.0/extensions/x86_64-linux/2.6.0/childprocess-2.0.0 RUBYLIBDIR\=/var/www/rails_tyutorial/vendor/bundle/ruby/2.6.0/extensions/x86_64-linux/2.6.0/childprocess-2.0.0
