@@ -4,11 +4,14 @@ lock '3.14.1'
 # Capistranoのログの表示に利用する
 set :application, 'rails_tyutorial'
 
+# deploy先のディレクトリ。
+set :deploy_to, '/var/www/rails_tyutorial'
+
 # どのリポジトリからアプリをpullするかを指定する
 set :repo_url,  'git@github.com:mkoki/rails_tyutorial.git'
 
 # バージョンが変わっても共通で参照するディレクトリを指定
-set :linked_dirs, fetch(:linked_dirs, []).push('log', 'tmp/pids', 'tmp/cache', 'tmp/sockets', 'vendor/bundle', 'public/system', 'public/uploads')
+append :linked_dirs, 'log', 'tmp/pids', 'tmp/cache', 'tmp/sockets', 'vendor/bundle', 'public/system', 'public/uploads'
 
 set :rbenv_type, :user
 set :rbenv_ruby, '2.6.4'
@@ -44,3 +47,4 @@ namespace :deploy do
     end
   end
 end
+
