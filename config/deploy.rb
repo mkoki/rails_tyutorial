@@ -1,3 +1,4 @@
+
 # capistranoのバージョン明記・固定
 lock '3.14.1'
 
@@ -21,7 +22,6 @@ set :rbenv_ruby, '2.6.4'
 set :unicorn_pid, -> { "#{shared_path}/tmp/pids/unicorn.pid" }
 
 # Unicornの設定ファイルの場所
-set :unicorn_config_path, -> { "#{current_path}/config/unicorn.rb" }
 set :keep_releases, 5
 
 # set :linked_files, fetch(:linked_files, []).push("config/master.key")
