@@ -27,7 +27,7 @@ group :development, :test do
   gem 'capistrano-rails'
   gem 'capistrano-rbenv'
   gem 'capistrano3-unicorn'
-  end
+end
 
 group :development do
   gem 'web-console',           '4.0.1'
@@ -49,7 +49,7 @@ end
 
 group :production do
   gem 'pg', '1.1.4'
-  gem "unicorn"
+  gem "unicorn", '5.4.1'
 end
 
 
