@@ -22,7 +22,11 @@ gem 'aws-sdk-s3',              '1.46.0', require: false
 group :development, :test do
   gem 'sqlite3', '1.4.1'
   gem 'byebug',  '11.0.1', platforms: [:mri, :mingw, :x64_mingw]
-end
+  gem 'capistrano'
+  gem 'capistrano-bundler'
+  gem 'capistrano-rails'
+  gem 'capistrano-rbenv'
+  end
 
 group :development do
   gem 'web-console',           '4.0.1'
@@ -44,6 +48,7 @@ end
 
 group :production do
   gem 'pg', '1.1.4'
+  gem "unicorn"
 end
 
 
