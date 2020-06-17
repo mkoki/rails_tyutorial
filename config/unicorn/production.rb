@@ -3,7 +3,7 @@
     pid_path = "#{app_path}/tmp/pids/unicorn.pid"
     listen_path = "#{app_path}/tmp/sockets/unicorn.sock"
     # unicorn paths
-    working_directory app_path
+    working_directory '/var/www/rails_tyutorial/current'
     pid pid_path
     # listen
     listen listen_path, backlog: 64
