@@ -1,15 +1,15 @@
 # paths
     app_path = "/var/www/rails_tyutorial"
-    pid_path = "#{app_path}/tmp/pids/unicorn.pid"
-    listen_path = "#{app_path}/tmp/sockets/unicorn.sock"
+    pid_path = "#{app_path}/current/tmp/pids/unicorn.pid"
+    listen_path = "#{app_path}/current/tmp/sockets/unicorn.sock"
     # unicorn paths
     working_directory '/var/www/rails_tyutorial/current'
     pid pid_path
     # listen
     listen listen_path, backlog: 64
     # logging
-    stderr_path "#{app_path}/log/unicorn.stderr.log"
-    stdout_path "#{app_path}/log/unicorn.stdout.log"
+    stderr_path "#{app_path}/current/log/unicorn.stderr.log"
+    stdout_path "#{app_path}/current/log/unicorn.stdout.log"
     # workers
     worker_processes 2
     # Time-out
