@@ -1,0 +1,19 @@
+---
+- hosts: target
+  remote_user: ec2-user
+
+  roles:
+    - hello
+    - app
+    - common
+    - ruby
+    - yarn
+    - nginx
+    - rails
+
+  vars:
+    app_name: rails-tyutorial
+    user_name: ec2-user
+    grp_name: ec2-user
+    app_root: "/var/www/{{ app_name }}"
+    rails_version: 6.0.0

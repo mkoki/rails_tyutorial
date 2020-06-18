@@ -1,0 +1,56 @@
+---
+- name: clone rbenv
+  git:
+    repo: git://github.com/sstephenson/rbenv.git
+    dest: ~/.rbenv
+
+- name: add rbenv path
+  lineinfile:
+    path: ~/.bash_profile
+    line: 'export PATH="$HOME/.rbenv/bin:$PATH"'
+
+- name: rbenv init
+  lineinfile:
+    path: ~/.bash_profile
+    line: 'eval "$(rbenv init -)"'
+
+- name: clone ruby-build
+  git:
+    repo: git://github.com/sstephenson/ruby-build.git
+    dest: ~/.rbenv/plugins/ruby-build
+
+- name: add path ruby-build
+  lineinfile:
+    path: ~/.bash_profile
+    line: 'export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"'
+
+- name: check ruby is installed
+  shell: "~/.rbenv/bin/rbenv versions | grep '2.6.4'"
+  register: ruby_install
+  ignore_errors: true
+  changed_when: False
+
+- name: install ruby
+  command: ~/.rbenv/bin/rbenv install 2.6.4
+  environment:
+    CONFIGURE_OPTS: '--disable-install-doc'
+  when: ruby_install is failed
+
+- name: check ruby version
+  shell: "~/.rbenv/shims/ruby -v | grep '2.6.4'"
+  register: check_ruby_version
+  ignore_errors: true
+  changed_when: False
+
+- name: globalize ruby
+  command: ~/.rbenv/bin/rbenv global 2.6.4
+  when: check_ruby_version is failed
+
+- name: install bunlder
+  gem:
+    name: bundler
+    executable: ~/.rbenv/shims/gem
+    user_install: no
+
+- name: Bundle Install
+  command: bash -lc "gem install bundler"

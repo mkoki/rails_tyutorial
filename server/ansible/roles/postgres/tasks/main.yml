@@ -1,0 +1,17 @@
+---
+- name: Install a yum repository file of pgdg 1/2.
+  # The repository file will be downloaded from the URL https://yum.postgresql.org/repopackages.php
+  # This task cannot use the "yum" module because you cannot specify the "--nodeps" option with running the yum/rpm command.
+  command: "rpm -ivh --nodeps https://download.postgresql.org/pub/repos/yum/12/redhat/rhel-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
+  args:
+    creates: /etc/yum.repos.d/pgdg-redhat-all.repo
+    warn: no
+
+- name: Install a yum repository file of pgdg 2/2.
+  replace: dest=/etc/yum.repos.d/pgdg-redhat-all.repo regexp='\$releasever' replace='7'
+
+- name: Install PostgreSQL 12 packages.
+  yum:
+    name:
+    - python-psycopg2
+    - postgresql12

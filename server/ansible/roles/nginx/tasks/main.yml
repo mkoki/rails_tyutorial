@@ -1,0 +1,32 @@
+---
+  - name: add repository
+    yum_repository:
+      name: nginx
+      description: nginx repo
+      gpgcheck: no
+      baseurl: "http://nginx.org/packages/centos/7/$basearch/"
+    become: yes
+
+  - name: install nginx
+    yum:
+      name: "nginx"
+      state: latest
+    become: yes
+
+  - name: copy nginx.conf
+    copy:
+      src: "production/nginx.conf"
+      dest: /etc/nginx/nginx.conf
+      owner: root
+      group: root
+      mode: 0644
+    become: yes
+
+  - name: copy rails-tyutorial.conf
+    copy:
+      src: "production/rails-tyutorial.conf"
+      dest: /etc/nginx/conf.d/rails-tyutorial.conf
+      owner: root
+      group: root
+      mode: 0644
+    become: yes
