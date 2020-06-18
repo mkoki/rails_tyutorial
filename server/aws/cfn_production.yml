@@ -1,0 +1,346 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: cf tutorial stack
+Parameters:
+  AppName:
+    Type: String
+    Default: appTest
+  PublicIP:
+    Type: String
+    Default: 116.94.0.124
+  KeyPairName:
+    Type: String
+    Default: ec2
+  DBName:
+    Type: String
+    Default: postgresRDS
+  DBMasterUsername:
+    Type: String
+    Default: koki
+  DBMasterUserPassword:
+    NoEcho: true
+    Type: String
+    Default: password
+
+
+Resources:
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: 10.1.0.0/16
+      Tags:
+        - Key: Name
+          Value: !Sub '${AppName}-prod'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 46b41462-8990-4924-a4d2-05f2f2d5feea
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub '${AppName}-prod'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: c3bc9f5d-8a1f-4fca-a564-38b3f594db67
+  VPCGatewayAttachment:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: b249b7bf-ee47-466b-ba3b-259a2a5c7c84
+  RouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${AppName}-prod'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: b5da8d4a-f4aa-4e4c-ac9c-a9f949f455cf
+  Route:
+    Type: 'AWS::EC2::Route'
+    DependsOn: 'VPCGatewayAttachment'
+    Properties:
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 9e06c3fd-5cd9-4877-8d39-7bc32deada2a
+  WebPublicSubnet01:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: ap-northeast-1a
+      CidrBlock: 10.1.1.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub 'web-public-a-${AppName}-prod'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 2084606a-b5d8-4f5d-b767-121854eec311
+  PublicSubnetRouteTableAssociation:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      SubnetId: !Ref WebPublicSubnet01
+      RouteTableId: !Ref RouteTable
+  WebPublicSubnet02:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: ap-northeast-1c
+      CidrBlock: 10.1.2.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub 'web-public-c-${AppName}-prod'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 2084606a-b5d8-4f5d-b767-121854eec311
+  DBPrivateSubnet01:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: ap-northeast-1a
+      CidrBlock: 10.1.10.0/24
+      Tags:
+        - Key: Name
+          Value: !Sub 'db-private-a-${AppName}-prod'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 2b1358e5-9a16-4549-bb19-e6ec044b9a56
+  DBPrivateSubnet02:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: ap-northeast-1c
+      CidrBlock: 10.1.11.0/24
+      Tags:
+        - Key: Name
+          Value: !Sub 'db-private-c-${AppName}-prod'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 5a1043da-3216-455a-bc7e-772d525aaeaa
+  WebPublicSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Allow access from the ALB security group
+      GroupName: !Sub web-public-prod
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Sub ${PublicIP}/32
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub 'web-public-${AppName}-prod'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: ff209f24-bfb7-4271-b354-2ad1de24a662
+  DBPrivateSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Allow access from the Web security group
+      GroupName: !Sub db-private-prod
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref WebPublicSecurityGroup
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub 'db-private-${AppName}-prod'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 088b3488-e88a-44fe-9558-9d2f7a19c814
+  ALBSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      VpcId: !Ref VPC
+      GroupName: !Sub alb-prod
+      GroupDescription: "-"
+      Tags:
+        - Key: "Name"
+          Value: !Sub 'alb-${AppName}-prod'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: "0.0.0.0/0"
+
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: "0.0.0.0/0"
+  DBSubnetGroup:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupDescription: !Sub prod
+      DBSubnetGroupName: !Sub prod
+      SubnetIds:
+        - !Ref DBPrivateSubnet01
+        - !Ref DBPrivateSubnet02
+      Tags:
+        - Key: Name
+          Value: !Sub 'db-${AppName}-prod'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: fa4c3b4c-66dd-4fb1-8e4e-29ac227398a5
+  WebInstance01:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      ImageId: ami-08847abae18baa040
+      InstanceType: t2.micro
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            DeleteOnTermination: false
+            VolumeType: gp2
+            VolumeSize: 20
+      KeyName: !Ref KeyPairName
+      SubnetId: !Ref WebPublicSubnet01
+      SecurityGroupIds:
+        - !Ref WebPublicSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub 'web-${AppName}-prod'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 0b8eb976-b71e-4710-b921-69ea71c8055c
+  ElasticIp:
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId: !Ref WebInstance01
+      Domain: vpc
+  DBInstance01:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      AllocatedStorage: 20
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: false
+      DBInstanceClass: db.t2.small
+      DBInstanceIdentifier: !Sub 'db-${AppName}-prod'
+      DBName: !Ref DBName
+      Engine: postgres
+      MasterUsername: !Ref DBMasterUsername
+      MasterUserPassword: !Ref DBMasterUserPassword
+      MultiAZ: true
+      StorageType: gp2
+      VPCSecurityGroups:
+        - !Ref DBPrivateSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub 'db-${AppName}-prod'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 187e2189-f2ec-40c5-9192-35f8ff4658b1
+
+  TargetGroup:
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    Properties:
+      VpcId: !Ref VPC
+      Name: !Sub "${AppName}-tg"
+      Protocol: HTTP
+      Port: 80
+      HealthCheckProtocol: HTTP
+      HealthCheckPath: "/"
+      HealthCheckPort: "traffic-port"
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
+      HealthCheckTimeoutSeconds: 5
+      HealthCheckIntervalSeconds: 10
+      Matcher:
+        HttpCode: 200
+      Tags:
+        - Key: Name
+          Value: !Sub "${AppName}-tg"
+      TargetGroupAttributes:
+        - Key: "deregistration_delay.timeout_seconds"
+          Value: 300
+        - Key: "stickiness.enabled"
+          Value: false
+        - Key: "stickiness.type"
+          Value: lb_cookie
+        - Key: "stickiness.lb_cookie.duration_seconds"
+          Value: 86400
+      Targets:
+        - Id: !Ref WebInstance01
+          Port: 80
+  InternetALB:
+    Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
+    Properties:
+      Name: !Sub "${AppName}-alb"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AppName}-alb"
+      Scheme: "internet-facing"
+      LoadBalancerAttributes:
+        - Key: "deletion_protection.enabled"
+          Value: false
+        - Key: "idle_timeout.timeout_seconds"
+          Value: 60
+      SecurityGroups:
+        - !Ref ALBSecurityGroup
+      Subnets:
+        - !Ref WebPublicSubnet01
+        - !Ref WebPublicSubnet02
+  ALBListener:
+    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref TargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref InternetALB
+      Port: 80
+      Protocol: HTTP
+  Ec2IAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+      Path: /
+      Policies: !Ref 'AWS::NoValue'
+      RoleName: !Ref 'AWS::NoValue'
+  Ec2RolePolicies:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: Ec2RolePolicies
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - s3:*
+          Resource:
+          - '*'
+        - Effect: Allow
+          Action:
+          - ssm:Describe*
+          - ssm:Get*
+          - ssm:List*
+          Resource:
+          - '*'
+      Roles:
+      - !Ref 'Ec2IAMRole'
+  Ec2IAMProfile:
+    Type: AWS::IAM::InstanceProfile
+    DependsOn: Ec2IAMRole
+    Properties:
+      Path: /
+      Roles:
+      - !Ref 'Ec2IAMRole'
